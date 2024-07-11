@@ -1,7 +1,7 @@
 # Maintainer:
 
 pkgname=powerpc-e500v2-toolchain
-pkgver=024.05.r378.g916f9bb1a3
+pkgver=024.05.r380.g5777bfc0f7
 pkgrel=1
 pkgdesc='Static analysis tool for ELF libraries and executables'
 arch=($CARCH)
@@ -11,6 +11,7 @@ license=(GPL)
 makedepends=('buildroot-meta')
 #optdepends=('capstone: disassembler' 'gnuplot: performance plot')
 source=("git+https://github.com/buildroot/buildroot.git")
+options=(!strip)
 sha256sums=('SKIP')
 
 pkgver() {
@@ -22,6 +23,7 @@ prepare() {
   cd "${srcdir}/buildroot/configs"
   echo "BR2_powerpc=y" > powerpc_e500v2_toolchain_defconfig
   echo "BR2_powerpc_8548=y" >> powerpc_e500v2_toolchain_defconfig
+  echo "BR2_PACKAGE_HOST_GDB=y" >> powerpc_e500v2_toolchain_defconfig
 }
 
 build() {
@@ -31,5 +33,10 @@ build() {
 }
 
 package() {
-  DESTDIR="$pkgdir" cmake --install build
+  mkdir -p "${pkgdir}/opt/"
+  cd "${pkgdir}/opt/"
+  tar zxf "${srcdir}/buildroot/output/images/powerpc-buildroot-linux-uclibcspe_sdk-buildroot.tar.gz"
+  mv powerpc-buildroot-linux-uclibcspe_sdk-buildroot ${pkgname}
+  cd ${pkgname}
+  ./relocate-sdk.sh "/opt/${pkgname}"
 }
